@@ -5,6 +5,7 @@ import {
   CuboidCollider,
   CylinderCollider,
   RigidBody,
+  useRapier,
 } from "@react-three/rapier";
 import { useEffect, useRef } from "react";
 import useSceneStore from "./store";
@@ -116,6 +117,7 @@ function Base() {
     init,
   } = useSceneStore((state: any) => state);
 
+
   const coinRef = useRef<any>(null);
   const [headTex, tailTex, edgeTex] = useTexture([
     "/texture/coin/heads.jpg",
@@ -162,12 +164,18 @@ function Base() {
 
     if (!fallCoin && pos.y > 1.2) {
       rb.setGravityScale(0, true);
+      // rb.setBodyType("kinematicPosition"); // no gravity
+      // handle.setBodyType(rapier.RigidBodyType.KinematicPositionBased);
+      
       rb.setLinvel({ x: 0, y: 0, z: 0 }, true);
       rb.setAngvel({ x: 9, y: 0, z: 0 }, true);
     }
-
+    
     if (fallCoin) {
+      // handle.setBodyType(rapier.RigidBodyType.Dynamic);
       rb.setGravityScale(1, true); // re-enable gravity
+      // rb.setBodyType("dynamic"); // gravity now active
+
     }
 
     const isSleeping =

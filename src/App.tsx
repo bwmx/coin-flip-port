@@ -29,7 +29,7 @@ function App() {
           shadow-camera-top={10}
           shadow-camera-bottom={-10}
         />
-        <Physics debug={false} gravity={[0, -9.81, 0]} interpolate={false}>
+        <Physics  gravity={[0, -9.81, 0]} interpolate={false}>
           <Base />
         </Physics>
       </Canvas>
