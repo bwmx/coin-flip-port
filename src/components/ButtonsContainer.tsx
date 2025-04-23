@@ -3,8 +3,8 @@ import useSceneStore from "./store";
 const clickSound = new Audio("/sound/click.wav");
 
 function ButtonsContainer() {
-  const { flipCoinFn, setFallCoin, init, result, canFlip } =
-    useSceneStore() as any;
+  const { flipCoinFn, setFallCoin, init, result, canFlip } = useSceneStore() as any;
+
   return (
     <div
       style={{
@@ -39,7 +39,7 @@ function ButtonsContainer() {
         <button
           disabled={!canFlip}
           style={{
-            backgroundColor: "white",
+            backgroundColor: canFlip ? "white" : "gray",
             color: "black",
             padding: "10px 20px",
             borderRadius: "5px",
