@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from "react";
 import useSceneStore from "./store";
 import * as THREE from "three";
 
-
 const hitSound = new Audio("/sound/hit1.wav");
 const hit2Sound = new Audio("/sound/hit2.wav");
 
@@ -54,7 +53,7 @@ type BaseProps = {
 };
 
 // new
-function Base({ outCome }: BaseProps)  {
+function Base({ outCome }: BaseProps) {
   const { setFlipCoinFn, fallCoin, setFallCoin, setResult, result, canFlip, setCanFlip, setInit, init } = useSceneStore((state: any) => state);
 
   const coinRef = useRef<any>(null);
@@ -91,39 +90,53 @@ function Base({ outCome }: BaseProps)  {
   useFrame(() => {
     const rb = coinRef.current;
     if (!rb || result) return;
-  
+
     const vel = rb.linvel();
     const ang = rb.angvel();
     const pos = rb.translation();
-  
+
     if (!fallCoin && pos.y > 2) {
       rb.setGravityScale(0, true);
       rb.setLinvel({ x: 0, y: 0, z: 0 }, true);
       rb.setAngvel({ x: 9, y: 0, z: 0 }, true);
     }
   
-    if (init && fallCoin && pos.y < 1.8) {
- 
-       const q = new THREE.Quaternion();
-       q.setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ'));
- 
-       // Lock orientation and zero spin
-       rb.setRotation({ x: q.x, y: q.y, z: q.z, w: q.w }, true);
-       rb.setAngvel({ x: 0, y: 0, z: 0 }, true);
-       rb.setGravityScale(1, false);
-       rb.setLinvel({ x: 0, y: 0, z: 0 }, true);
-       rb.setAngvel({ x:  outCome === "heads" ? 10 : 8, y: 0, z: 0 }, true);
- 
-
+    if(init && fallCoin && pos.y < 1.95) {
       setFallCoin(false);
     }
-  
-    if (fallCoin) {
-      rb.setGravityScale(1, false);
+
+    if (fallCoin && init) {
+      
+      const r = rb.rotation();
+      const quat = new THREE.Quaternion(r.x, r.y, r.z, r.w);
+      
+      const up = new THREE.Vector3(0, 1, 0);
+      up.applyQuaternion(quat); // Rotate up vector
+      
+      const worldUp = new THREE.Vector3(0, 1, 0);
+      const worldDown = new THREE.Vector3(0, -1, 0);
+      
+      const angleUp = up.angleTo(worldUp); // 0 degrees = perfect up
+      const angleDown = up.angleTo(worldDown); // 0 degrees = perfect down
+      
+      if (angleUp < 0.2) {
+        rb.setAngvel({ x: 0, y: 0, z: 0 }, true);
+        
+        if (outCome === "heads") {
+          console.log("Coin landed heads up!");
+          rb.setGravityScale(1, false);
+          rb.setAngvel({ x: 9, y: 0, z: 0 }, true); 
+        } else {
+          console.log("Need to nudge for tails!");
+          rb.setGravityScale(1, false);
+          rb.setAngvel({ x: 7.5, y: 0, z: 0 }, true); 
+        }
+      };
+
     }
-    
-    const isSleeping = Math.abs(vel.x) < 0.01 && Math.abs(vel.y) < 0.01 && Math.abs(vel.z) < 0.01 &&   Math.abs(ang.x) < 0.01 && Math.abs(ang.y) < 0.01 && Math.abs(ang.z) < 0.01;
-    
+
+    const isSleeping = Math.abs(vel.x) < 0.01 && Math.abs(vel.y) < 0.01 && Math.abs(vel.z) < 0.01 && Math.abs(ang.x) < 0.01 && Math.abs(ang.y) < 0.01 && Math.abs(ang.z) < 0.01;
+
     if (isSleeping) {
       const rotation = rb.rotation();
       const up = rotation.w * rotation.w - rotation.x * rotation.x - rotation.y * rotation.y + rotation.z * rotation.z;
@@ -132,63 +145,8 @@ function Base({ outCome }: BaseProps)  {
       setCanFlip(true);
     }
   });
-  
-  
 
-  // useFrame(() => {
-  //   const rb = coinRef.current;
-  //   if (!rb || result) return;
   
-  //   const vel = rb.linvel();
-  //   const ang = rb.angvel();
-  //   const pos = rb.translation();
-  
-  //   if (!fallCoin && pos.y > 2) {
-  //     rb.setGravityScale(0, true);
-  //     rb.setLinvel({ x: 0, y: 0, z: 0 }, true);
-  //     rb.setAngvel({ x: 6, y: 0, z: 0 }, true); // pre-spin
-  //   }
-  
-  //   if (init && fallCoin && pos.y < 1.95) {
-  //     rb.setGravityScale(1, false); // let it fall now
-  //     rb.setAngvel({ x: 8, y: 0, z: 0 }, true);
-  //     setFallCoin(false);
-  //     setInit(false);
-  //   }
-  
-  //   if (fallCoin) {
-  //     rb.setGravityScale(1, false);
-  //   }
-  
-  //   const isSleeping =
-  //     Math.abs(vel.x) < 0.01 &&
-  //     Math.abs(vel.y) < 0.01 &&
-  //     Math.abs(vel.z) < 0.01 &&
-  //     Math.abs(ang.x) < 0.01 &&
-  //     Math.abs(ang.y) < 0.01 &&
-  //     Math.abs(ang.z) < 0.01;
-  
-  //   if (isSleeping) {
-  //     // 🧠 FORCE the rotation manually
-  //     const rotation = desiredOutcome === "heads"
-  //       ? { x: 0, y: 0, z: 0, w: 1 } // face up
-  //       : { x: 1, y: 0, z: 0, w: 0 }; // face down (180º on X)
-  
-  //     rb.setRotation(rotation, false);
-  
-  //     // verify outcome for UI
-  //     const up = rotation.w * rotation.w -
-  //       rotation.x * rotation.x -
-  //       rotation.y * rotation.y +
-  //       rotation.z * rotation.z;
-  
-  //     const outcome = up > 0 ? "Heads" : "Tails";
-  //     setResult(outcome);
-  //     setCanFlip(true);
-  //   }
-  // });
-  
-
   useEffect(() => setFlipCoinFn(flipCoin), [setFlipCoinFn]);
 
   return (

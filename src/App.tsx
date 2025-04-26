@@ -30,7 +30,7 @@ function App() {
           shadow-camera-bottom={-10}
         />
         <Physics  gravity={[0, -9.81, 0]} interpolate={false}>
-          <Base outCome={"tails"} />
+          <Base outCome={"heads"} />
         </Physics>
       </Canvas>
       <ButtonsContainer />
